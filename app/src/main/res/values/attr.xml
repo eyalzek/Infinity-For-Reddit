@@ -49,4 +49,10 @@
         <attr name="backgroundColor" format="color"/>
         <attr name="cardViewBackgroundColor" format="color"/>
     </declare-styleable>
+
+    <declare-styleable name="SliderPreference">
+        <attr name="sliderMin" format="integer" />
+        <attr name="sliderMax" format="integer" />
+        <attr name="sliderStepSize" format="integer" />
+    </declare-styleable>
 </resources>

@@ -101,6 +101,8 @@
     <string name="action_reset_fab_position">Reset FAB position</string>
     <string name="action_download_all_gallery_media">Download All Gallery Media</string>
     <string name="action_download_all_imgur_album_media">Download All Imgur Album Media</string>
+    <string name="action_next_parent_comment">Next Top-Level Comment</string>
+    <string name="action_previous_parent_comment">Previous Top-Level Comment</string>
 
     <string name="parse_json_response_error">Error occurred when parsing the JSON response</string>
     <string name="retrieve_token_error">Error Retrieving the token</string>
@@ -670,6 +672,8 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="discard_dialog_button">Discard</string>
+    <string name="save_comment_draft">Save comment draft?</string>
+    <string name="save_comment_draft_detail">Your draft will be saved.</string>
 
     <string name="no_data_received">No data received</string>
     <string name="no_image_path_received">No image path received</string>
@@ -730,6 +734,7 @@
     <string name="copy_video_link">Copy Video Link</string>
     <string name="copy_link">Copy Link</string>
     <string name="open_link">Open Link</string>
+    <string name="share_as_image">Share as Image</string>
 
     <string name="copy_success">Copied</string>
     <string name="copy_link_failed">Cannot copy the link</string>
@@ -1535,4 +1540,6 @@
     <string name="proxy_http">HTTP</string>
     <string name="proxy_socks">SOCKS</string>
     <string name="proxy_direct">Direct</string>
+    
+    <string name="jump_to_parent_comment">Jump to Parent Comment</string>
 </resources>

@@ -62,6 +62,8 @@ import ml.docilealligator.infinityforreddit.utils.SharedPreferencesUtils;
 import ml.docilealligator.infinityforreddit.utils.Utils;
 
 public abstract class BaseActivity extends AppCompatActivity implements CustomFontReceiver {
+    public static final int IGNORE_MARGIN = -1;
+
     private boolean immersiveInterface;
     private boolean changeStatusBarIconColor;
     private boolean transparentStatusBarAfterToolbarCollapsed;
@@ -111,8 +113,8 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomFo
 
         boolean systemDefault = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
         int systemThemeType = Integer.parseInt(mSharedPreferences.getString(SharedPreferencesUtils.THEME_KEY, "2"));
-        immersiveInterface = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-                mSharedPreferences.getBoolean(SharedPreferencesUtils.IMMERSIVE_INTERFACE_KEY, true);
+        immersiveInterface = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                mSharedPreferences.getBoolean(SharedPreferencesUtils.IMMERSIVE_INTERFACE_KEY, true)) || Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM;
         if (immersiveInterface && config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             immersiveInterface = !mSharedPreferences.getBoolean(SharedPreferencesUtils.DISABLE_IMMERSIVE_INTERFACE_IN_LANDSCAPE_MODE, false);
         }
@@ -337,6 +339,28 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomFo
         return result;
     }
 
+    public static <T extends View> void setMargins(T view, int left, int top, int right, int bottom) {
+        ViewGroup.LayoutParams lp = view.getLayoutParams();
+        if (lp instanceof ViewGroup.MarginLayoutParams) {
+            ViewGroup.MarginLayoutParams marginParams = (ViewGroup.MarginLayoutParams) lp;
+
+            if (top >= 0) {
+                marginParams.topMargin = top;
+            }
+            if (bottom >= 0) {
+                marginParams.bottomMargin = bottom;
+            }
+            if (left >= 0) {
+                marginParams.setMarginStart(left);
+            }
+            if (right >= 0) {
+                marginParams.setMarginEnd(right);
+            }
+
+            view.setLayoutParams(marginParams);
+        }
+    }
+
     protected void setTransparentStatusBarAfterToolbarCollapsed() {
         this.transparentStatusBarAfterToolbarCollapsed = true;
     }
@@ -345,7 +369,10 @@ public abstract class BaseActivity extends AppCompatActivity implements CustomFo
         hasDrawerLayout = true;
     }
 
-    public void setImmersiveModeNotApplicable() {
+    public void setImmersiveModeNotApplicableBelowAndroid16() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            return;
+        }
         isImmersiveInterfaceApplicable = false;
     }
 

@@ -156,6 +156,31 @@ public class PostOptionsBottomSheetFragment extends LandscapeExpandedRoundedBott
                 });
             }
 
+            binding.shareTextViewPostOptionsBottomSheetFragment.setOnClickListener(view -> {
+                Bundle bundle = new Bundle();
+                bundle.putString(ShareBottomSheetFragment.EXTRA_POST_LINK, mPost.getPermalink());
+                if (mPost.getPostType() != Post.TEXT_TYPE) {
+                    bundle.putInt(ShareBottomSheetFragment.EXTRA_MEDIA_TYPE, mPost.getPostType());
+                    switch (mPost.getPostType()) {
+                        case Post.IMAGE_TYPE:
+                        case Post.GIF_TYPE:
+                        case Post.LINK_TYPE:
+                        case Post.NO_PREVIEW_LINK_TYPE:
+                            bundle.putString(ShareBottomSheetFragment.EXTRA_MEDIA_LINK, mPost.getUrl());
+                            break;
+                        case Post.VIDEO_TYPE:
+                            bundle.putString(ShareBottomSheetFragment.EXTRA_MEDIA_LINK, mPost.getVideoDownloadUrl());
+                            break;
+                    }
+                }
+                bundle.putParcelable(ShareBottomSheetFragment.EXTRA_POST, mPost);
+                ShareBottomSheetFragment shareBottomSheetFragment = new ShareBottomSheetFragment();
+                shareBottomSheetFragment.setArguments(bundle);
+                shareBottomSheetFragment.show(mBaseActivity.getSupportFragmentManager(), shareBottomSheetFragment.getTag());
+
+                dismiss();
+            });
+
             binding.addToPostFilterTextViewPostOptionsBottomSheetFragment.setOnClickListener(view -> {
                 Intent intent = new Intent(mBaseActivity, PostFilterPreferenceActivity.class);
                 intent.putExtra(PostFilterPreferenceActivity.EXTRA_POST, mPost);
