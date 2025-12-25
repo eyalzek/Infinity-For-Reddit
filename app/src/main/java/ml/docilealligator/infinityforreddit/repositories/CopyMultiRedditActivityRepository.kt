@@ -50,7 +50,7 @@ class CopyMultiRedditActivityRepositoryImpl(
 
     override suspend fun copyMultiReddit(multipath: String, name: String, description: String, subreddits: List<ExpandedSubredditInMultiReddit>): APIResult<MultiReddit?> {
         if (accessToken.isEmpty()) {
-            return copyMultiRedditAnonymous(multipath, name, description, subreddits)
+            return copyMultiRedditAnonymous(name, description, subreddits)
         }
 
         try {
@@ -79,16 +79,16 @@ class CopyMultiRedditActivityRepositoryImpl(
         }
     }
 
-    suspend fun copyMultiRedditAnonymous(multipath: String, name: String, description: String, subreddits: List<ExpandedSubredditInMultiReddit>): APIResult<MultiReddit?> {
+    suspend fun copyMultiRedditAnonymous(name: String, description: String, subreddits: List<ExpandedSubredditInMultiReddit>): APIResult<MultiReddit?> {
         if (!redditDataRoomDatabase.accountDaoKt().isAnonymousAccountInserted()) {
             redditDataRoomDatabase.accountDaoKt().insert(Account.getAnonymousAccount())
         }
 
-        if (redditDataRoomDatabase.multiRedditDaoKt().getMultiReddit(multipath, Account.ANONYMOUS_ACCOUNT) != null) {
+        if (redditDataRoomDatabase.multiRedditDaoKt().getMultiReddit("/user/-/m/$name", Account.ANONYMOUS_ACCOUNT) != null) {
             return APIResult.Error(APIError.MessageRes(R.string.duplicate_multi_reddit))
         } else {
             val newMultiReddit = MultiReddit(
-                multipath,
+                "/user/-/m/$name",
                 name,
                 name,
                 description,
@@ -106,7 +106,7 @@ class CopyMultiRedditActivityRepositoryImpl(
             redditDataRoomDatabase.multiRedditDaoKt().insert(newMultiReddit)
             val anonymousMultiRedditSubreddits: MutableList<AnonymousMultiredditSubreddit> = mutableListOf()
             for (s in subreddits) {
-                anonymousMultiRedditSubreddits.add(AnonymousMultiredditSubreddit(multipath, s.name, s.iconUrl))
+                anonymousMultiRedditSubreddits.add(AnonymousMultiredditSubreddit("/user/-/m/$name", s.name, s.iconUrl))
             }
             redditDataRoomDatabase.anonymousMultiredditSubredditDaoKt().insertAll(anonymousMultiRedditSubreddits)
 
