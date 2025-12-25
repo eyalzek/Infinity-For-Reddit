@@ -64,7 +64,7 @@ class CopyMultiRedditActivityViewModel(
         _copyMultiRedditState.value = ActionState.Running
 
         viewModelScope.launch {
-            when (val result = copyMultiRedditActivityRepository.copyMultiReddit(multipath, _name.value, _description.value)) {
+            when (val result = copyMultiRedditActivityRepository.copyMultiReddit(multipath, _name.value, _description.value, (multiRedditState.value as DataLoadState.Success).data.subreddits)) {
                 is APIResult.Success -> {
                     _copyMultiRedditState.value = ActionState.Success(result.data)
                 }

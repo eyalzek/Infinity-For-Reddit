@@ -3,7 +3,11 @@ package ml.docilealligator.infinityforreddit.repositories
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import ml.docilealligator.infinityforreddit.APIResult
+import ml.docilealligator.infinityforreddit.RedditDataRoomDatabase
+import ml.docilealligator.infinityforreddit.account.Account
 import ml.docilealligator.infinityforreddit.apis.RedditAPIKt
+import ml.docilealligator.infinityforreddit.multireddit.AnonymousMultiredditSubreddit
+import ml.docilealligator.infinityforreddit.multireddit.ExpandedSubredditInMultiReddit
 import ml.docilealligator.infinityforreddit.multireddit.FetchMultiRedditInfo
 import ml.docilealligator.infinityforreddit.multireddit.MultiReddit
 import ml.docilealligator.infinityforreddit.utils.APIUtils
@@ -16,11 +20,13 @@ import java.io.IOException
 
 interface CopyMultiRedditActivityRepository {
     suspend fun fetchMultiRedditInfo(multipath: String): MultiReddit?
-    suspend fun copyMultiReddit(multipath: String, name: String, description: String): APIResult<MultiReddit?>
+    suspend fun copyMultiReddit(multipath: String, name: String, description: String, subreddits: List<ExpandedSubredditInMultiReddit>): APIResult<MultiReddit?>
+    //suspend fun copyMultiRedditAnonymous(multipath: String, name: String, description: String, subreddits: List<ExpandedSubredditInMultiReddit>): APIResult<MultiReddit?>
 }
 
 class CopyMultiRedditActivityRepositoryImpl(
     val oauthRetrofit: Retrofit,
+    val redditDataRoomDatabase: RedditDataRoomDatabase,
     val accessToken: String
 ): CopyMultiRedditActivityRepository {
     override suspend fun fetchMultiRedditInfo(multipath: String): MultiReddit? {
@@ -40,7 +46,11 @@ class CopyMultiRedditActivityRepositoryImpl(
         }
     }
 
-    override suspend fun copyMultiReddit(multipath: String, name: String, description: String): APIResult<MultiReddit?> {
+    override suspend fun copyMultiReddit(multipath: String, name: String, description: String, subreddits: List<ExpandedSubredditInMultiReddit>): APIResult<MultiReddit?> {
+        if (accessToken.isEmpty()) {
+            return copyMultiRedditAnonymous(multipath, name, description, subreddits)
+        }
+
         try {
             val params = mapOf(
                 APIUtils.FROM_KEY to multipath,
@@ -65,5 +75,34 @@ class CopyMultiRedditActivityRepositoryImpl(
                 return APIResult.Error("Cannot copy multireddit.")
             }
         }
+    }
+
+    suspend fun copyMultiRedditAnonymous(multipath: String, name: String, description: String, subreddits: List<ExpandedSubredditInMultiReddit>): APIResult<MultiReddit?> {
+        if (!redditDataRoomDatabase.accountDaoKt().isAnonymousAccountInserted()) {
+            redditDataRoomDatabase.accountDaoKt().insert(Account.getAnonymousAccount())
+        }
+        val newMultiReddit = MultiReddit(
+            multipath,
+            name,
+            name,
+            description,
+            null,
+            null,
+            "private",
+            Account.ANONYMOUS_ACCOUNT,
+            0,
+            System.currentTimeMillis(),
+            true,
+            false,
+            false
+        )
+        redditDataRoomDatabase.multiRedditDaoKt().insert(newMultiReddit)
+        val anonymousMultiRedditSubreddits: MutableList<AnonymousMultiredditSubreddit> = mutableListOf()
+        for (s in subreddits) {
+            anonymousMultiRedditSubreddits.add(AnonymousMultiredditSubreddit(multipath, s.name))
+        }
+        redditDataRoomDatabase.anonymousMultiredditSubredditDaoKt().insertAll(anonymousMultiRedditSubreddits)
+
+        return APIResult.Success(newMultiReddit)
     }
 }

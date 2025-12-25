@@ -23,6 +23,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -34,7 +35,9 @@ import ml.docilealligator.infinityforreddit.account.Account;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.databinding.ActivityCreateMultiRedditBinding;
 import ml.docilealligator.infinityforreddit.multireddit.CreateMultiReddit;
+import ml.docilealligator.infinityforreddit.multireddit.ExpandedSubredditInMultiReddit;
 import ml.docilealligator.infinityforreddit.multireddit.MultiRedditJSONModel;
+import ml.docilealligator.infinityforreddit.subreddit.SubredditWithSelection;
 import ml.docilealligator.infinityforreddit.utils.Utils;
 import retrofit2.Retrofit;
 
@@ -58,7 +61,7 @@ public class CreateMultiRedditActivity extends BaseActivity {
     @Inject
     Executor mExecutor;
     private ActivityCreateMultiRedditBinding binding;
-    private ArrayList<String> mSubreddits;
+    private ArrayList<ExpandedSubredditInMultiReddit> mSubreddits;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,7 +116,7 @@ public class CreateMultiRedditActivity extends BaseActivity {
         }
 
         if (savedInstanceState != null) {
-            mSubreddits = savedInstanceState.getStringArrayList(SELECTED_SUBREDDITS_STATE);
+            mSubreddits = savedInstanceState.getParcelableArrayList(SELECTED_SUBREDDITS_STATE);
         } else {
             mSubreddits = new ArrayList<>();
         }
@@ -123,7 +126,7 @@ public class CreateMultiRedditActivity extends BaseActivity {
     private void bindView() {
         binding.selectSubredditChipCreateMultiRedditActivity.setOnClickListener(view -> {
             Intent intent = new Intent(CreateMultiRedditActivity.this, SelectedSubredditsAndUsersActivity.class);
-            intent.putStringArrayListExtra(SelectedSubredditsAndUsersActivity.EXTRA_SELECTED_SUBREDDITS, mSubreddits);
+            intent.putParcelableArrayListExtra(SelectedSubredditsAndUsersActivity.EXTRA_SELECTED_SUBREDDITS, mSubreddits);
             startActivityForResult(intent, SUBREDDIT_SELECTION_REQUEST_CODE);
         });
 
@@ -204,8 +207,10 @@ public class CreateMultiRedditActivity extends BaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == SUBREDDIT_SELECTION_REQUEST_CODE && resultCode == RESULT_OK) {
             if (data != null) {
-                mSubreddits = data.getStringArrayListExtra(
-                        SubredditMultiselectionActivity.EXTRA_RETURN_SELECTED_SUBREDDITS);
+                ArrayList<SubredditWithSelection> subredditWithSelections = data.getParcelableArrayListExtra(SubredditMultiselectionActivity.EXTRA_RETURN_SELECTED_SUBREDDITS);
+                mSubreddits = new ArrayList<>(subredditWithSelections.stream().map(
+                        (subredditWithSelection -> new ExpandedSubredditInMultiReddit(subredditWithSelection.getName(), subredditWithSelection.getIconUrl()))
+                ).collect(Collectors.toList()));
             }
         }
     }
@@ -213,7 +218,7 @@ public class CreateMultiRedditActivity extends BaseActivity {
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putStringArrayList(SELECTED_SUBREDDITS_STATE, mSubreddits);
+        outState.putParcelableArrayList(SELECTED_SUBREDDITS_STATE, mSubreddits);
     }
 
     @Override

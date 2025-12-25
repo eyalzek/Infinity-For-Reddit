@@ -11,13 +11,14 @@ import java.util.ArrayList;
 import ml.docilealligator.infinityforreddit.activities.BaseActivity;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.databinding.ItemSelectedSubredditBinding;
+import ml.docilealligator.infinityforreddit.multireddit.ExpandedSubredditInMultiReddit;
 
 public class SelectedSubredditsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final BaseActivity activity;
     private final CustomThemeWrapper customThemeWrapper;
-    private final ArrayList<String> subreddits;
+    private final ArrayList<ExpandedSubredditInMultiReddit> subreddits;
 
-    public SelectedSubredditsRecyclerViewAdapter(BaseActivity activity, CustomThemeWrapper customThemeWrapper, ArrayList<String> subreddits) {
+    public SelectedSubredditsRecyclerViewAdapter(BaseActivity activity, CustomThemeWrapper customThemeWrapper, ArrayList<ExpandedSubredditInMultiReddit> subreddits) {
         this.activity = activity;
         this.customThemeWrapper = customThemeWrapper;
         if (subreddits == null) {
@@ -37,7 +38,7 @@ public class SelectedSubredditsRecyclerViewAdapter extends RecyclerView.Adapter<
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof SubredditViewHolder) {
-            ((SubredditViewHolder) holder).binding.subredditNameItemSelectedSubreddit.setText(subreddits.get(holder.getBindingAdapterPosition()));
+            ((SubredditViewHolder) holder).binding.subredditNameItemSelectedSubreddit.setText(subreddits.get(holder.getBindingAdapterPosition()).getName());
             ((SubredditViewHolder) holder).binding.deleteImageViewItemSelectedSubreddit.setOnClickListener(view -> {
                 subreddits.remove(holder.getBindingAdapterPosition());
                 notifyItemRemoved(holder.getBindingAdapterPosition());
@@ -50,18 +51,18 @@ public class SelectedSubredditsRecyclerViewAdapter extends RecyclerView.Adapter<
         return subreddits.size();
     }
 
-    public void addSubreddits(ArrayList<String> newSubreddits) {
+    public void addSubreddits(ArrayList<ExpandedSubredditInMultiReddit> newSubreddits) {
         int oldSize = subreddits.size();
         subreddits.addAll(newSubreddits);
         notifyItemRangeInserted(oldSize, newSubreddits.size());
     }
 
     public void addUserInSubredditType(String username) {
-        subreddits.add(username);
+        subreddits.add(new ExpandedSubredditInMultiReddit(username, null));
         notifyItemInserted(subreddits.size());
     }
 
-    public ArrayList<String> getSubreddits() {
+    public ArrayList<ExpandedSubredditInMultiReddit> getSubreddits() {
         return subreddits;
     }
 

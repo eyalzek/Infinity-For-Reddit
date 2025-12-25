@@ -120,11 +120,11 @@ class CopyMultiRedditActivity : BaseActivity() {
             }
         }
 
-        val multipath = intent.getStringExtra(EXTRA_MULTIPATH) ?: ""
+        val multipath = intent.getStringExtra(EXTRA_MULTIPATH) ?: "/user/remainanon/m/asiannsfw"
 
         copyMultiRedditActivityViewModel = ViewModelProvider.create(
             this,
-            provideFactory(multipath, CopyMultiRedditActivityRepositoryImpl(mOauthRetrofit, accessToken ?: ""))
+            provideFactory(multipath, CopyMultiRedditActivityRepositoryImpl(mOauthRetrofit, mRedditDataRoomDatabase, accessToken ?: ""))
         )[CopyMultiRedditActivityViewModel::class.java]
 
         copyMultiRedditActivityViewModel.fetchMultiRedditInfo()
@@ -159,7 +159,10 @@ class CopyMultiRedditActivity : BaseActivity() {
                         }
                         is ActionState.Success<*> -> {
                             startActivity(Intent(this@CopyMultiRedditActivity, ViewMultiRedditDetailActivity::class.java).apply {
-                                putExtra(ViewMultiRedditDetailActivity.EXTRA_MULTIREDDIT_PATH, (copyMultiRedditState as ActionState.Success<MultiReddit>).data.path)
+                                val data = (copyMultiRedditState as ActionState.Success<*>).data
+                                if (data is MultiReddit) {
+                                    putExtra(ViewMultiRedditDetailActivity.EXTRA_MULTIREDDIT_PATH, data.path)
+                                }
                             })
                             finish()
                         }

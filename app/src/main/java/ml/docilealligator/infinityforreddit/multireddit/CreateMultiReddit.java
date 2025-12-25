@@ -33,7 +33,7 @@ public class CreateMultiReddit {
         params.put(APIUtils.MULTIPATH_KEY, multipath);
         params.put(APIUtils.MODEL_KEY, model);
         oauthRetrofit.create(RedditAPI.class).createMultiReddit(APIUtils.getOAuthHeader(accessToken),
-                params).enqueue(new Callback<String>() {
+                params).enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<String> call, @NonNull Response<String> response) {
                 if (response.isSuccessful()) {
@@ -64,7 +64,7 @@ public class CreateMultiReddit {
     public static void anonymousCreateMultiReddit(Executor executor, Handler handler,
                                                   RedditDataRoomDatabase redditDataRoomDatabase,
                                                   String multipath, String name, String description,
-                                                  List<String> subreddits,
+                                                  List<ExpandedSubredditInMultiReddit> subreddits,
                                                   CreateMultiRedditListener createMultiRedditListener) {
         executor.execute(() -> {
             if (!redditDataRoomDatabase.accountDao().isAnonymousAccountInserted()) {
@@ -73,8 +73,8 @@ public class CreateMultiReddit {
             redditDataRoomDatabase.multiRedditDao().insert(new MultiReddit(multipath, name, name, description,
                     null, null, "private", Account.ANONYMOUS_ACCOUNT, 0, System.currentTimeMillis(), true, false, false));
             List<AnonymousMultiredditSubreddit> anonymousMultiredditSubreddits = new ArrayList<>();
-            for (String s : subreddits) {
-                anonymousMultiredditSubreddits.add(new AnonymousMultiredditSubreddit(multipath, s));
+            for (ExpandedSubredditInMultiReddit s : subreddits) {
+                anonymousMultiredditSubreddits.add(new AnonymousMultiredditSubreddit(multipath, s.getName()));
             }
             redditDataRoomDatabase.anonymousMultiredditSubredditDao().insertAll(anonymousMultiredditSubreddits);
 

@@ -14,6 +14,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import ml.docilealligator.infinityforreddit.account.Account;
 import ml.docilealligator.infinityforreddit.account.AccountDao;
+import ml.docilealligator.infinityforreddit.account.AccountDaoKt;
 import ml.docilealligator.infinityforreddit.comment.CommentDraft;
 import ml.docilealligator.infinityforreddit.comment.CommentDraftDao;
 import ml.docilealligator.infinityforreddit.commentfilter.CommentFilter;
@@ -24,8 +25,10 @@ import ml.docilealligator.infinityforreddit.customtheme.CustomTheme;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeDao;
 import ml.docilealligator.infinityforreddit.multireddit.AnonymousMultiredditSubreddit;
 import ml.docilealligator.infinityforreddit.multireddit.AnonymousMultiredditSubredditDao;
+import ml.docilealligator.infinityforreddit.multireddit.AnonymousMultiredditSubredditDaoKt;
 import ml.docilealligator.infinityforreddit.multireddit.MultiReddit;
 import ml.docilealligator.infinityforreddit.multireddit.MultiRedditDao;
+import ml.docilealligator.infinityforreddit.multireddit.MultiRedditDaoKt;
 import ml.docilealligator.infinityforreddit.postfilter.PostFilter;
 import ml.docilealligator.infinityforreddit.postfilter.PostFilterDao;
 import ml.docilealligator.infinityforreddit.postfilter.PostFilterUsage;
@@ -66,6 +69,8 @@ public abstract class RedditDataRoomDatabase extends RoomDatabase {
 
     public abstract AccountDao accountDao();
 
+    public abstract AccountDaoKt accountDaoKt();
+
     public abstract SubredditDao subredditDao();
 
     public abstract SubscribedSubredditDao subscribedSubredditDao();
@@ -75,6 +80,8 @@ public abstract class RedditDataRoomDatabase extends RoomDatabase {
     public abstract SubscribedUserDao subscribedUserDao();
 
     public abstract MultiRedditDao multiRedditDao();
+
+    public abstract MultiRedditDaoKt multiRedditDaoKt();
 
     public abstract CustomThemeDao customThemeDao();
 
@@ -87,6 +94,8 @@ public abstract class RedditDataRoomDatabase extends RoomDatabase {
     public abstract PostFilterUsageDao postFilterUsageDao();
 
     public abstract AnonymousMultiredditSubredditDao anonymousMultiredditSubredditDao();
+
+    public abstract AnonymousMultiredditSubredditDaoKt anonymousMultiredditSubredditDaoKt();
 
     public abstract CommentFilterDao commentFilterDao();
 
