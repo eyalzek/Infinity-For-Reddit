@@ -139,7 +139,6 @@ class CopyMultiRedditActivity : BaseActivity() {
                 val copyMultiRedditState by copyMultiRedditActivityViewModel.copyMultiRedditState.collectAsStateWithLifecycle()
                 val name by copyMultiRedditActivityViewModel.name.collectAsStateWithLifecycle()
                 val description by copyMultiRedditActivityViewModel.description.collectAsStateWithLifecycle()
-                var isPrivate by remember { mutableStateOf(true) }
 
                 val scope = rememberCoroutineScope()
                 val snackbarHostState = remember { SnackbarHostState() }
@@ -274,15 +273,6 @@ class CopyMultiRedditActivity : BaseActivity() {
                                         placeholder = stringResource(R.string.multi_reddit_description_hint)
                                     ) {
                                         copyMultiRedditActivityViewModel.setDescription(it)
-                                    }
-                                }
-
-                                item {
-                                    SwitchRow(
-                                        checked = isPrivate,
-                                        title = stringResource(R.string.private_multi_reddit)
-                                    ) {
-                                        isPrivate = it
                                     }
                                 }
 
