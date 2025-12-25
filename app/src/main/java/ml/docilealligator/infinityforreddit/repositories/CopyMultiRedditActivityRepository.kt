@@ -2,7 +2,9 @@ package ml.docilealligator.infinityforreddit.repositories
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import ml.docilealligator.infinityforreddit.APIError
 import ml.docilealligator.infinityforreddit.APIResult
+import ml.docilealligator.infinityforreddit.R
 import ml.docilealligator.infinityforreddit.RedditDataRoomDatabase
 import ml.docilealligator.infinityforreddit.account.Account
 import ml.docilealligator.infinityforreddit.apis.RedditAPIKt
@@ -65,14 +67,14 @@ class CopyMultiRedditActivityRepositoryImpl(
             }
         } catch (e: IOException) {
             e.printStackTrace()
-            return APIResult.Error(e.localizedMessage ?: "Network error")
+            return APIResult.Error(APIError.Message(e.localizedMessage ?: "Network error"))
         } catch (e: HttpException) {
             e.printStackTrace()
             try {
                 val errorMessage = JSONObject(e.response()?.errorBody()?.string() ?: "").getString(JSONUtils.EXPLANATION_KEY)
-                return APIResult.Error(errorMessage)
+                return APIResult.Error(APIError.Message(errorMessage))
             } catch(ignore: JSONException) {
-                return APIResult.Error("Cannot copy multireddit.")
+                return APIResult.Error(APIError.MessageRes(R.string.copy_multi_reddit_failed))
             }
         }
     }
@@ -81,28 +83,34 @@ class CopyMultiRedditActivityRepositoryImpl(
         if (!redditDataRoomDatabase.accountDaoKt().isAnonymousAccountInserted()) {
             redditDataRoomDatabase.accountDaoKt().insert(Account.getAnonymousAccount())
         }
-        val newMultiReddit = MultiReddit(
-            multipath,
-            name,
-            name,
-            description,
-            null,
-            null,
-            "private",
-            Account.ANONYMOUS_ACCOUNT,
-            0,
-            System.currentTimeMillis(),
-            true,
-            false,
-            false
-        )
-        redditDataRoomDatabase.multiRedditDaoKt().insert(newMultiReddit)
-        val anonymousMultiRedditSubreddits: MutableList<AnonymousMultiredditSubreddit> = mutableListOf()
-        for (s in subreddits) {
-            anonymousMultiRedditSubreddits.add(AnonymousMultiredditSubreddit(multipath, s.name))
-        }
-        redditDataRoomDatabase.anonymousMultiredditSubredditDaoKt().insertAll(anonymousMultiRedditSubreddits)
 
-        return APIResult.Success(newMultiReddit)
+        if (redditDataRoomDatabase.multiRedditDaoKt().getMultiReddit(multipath, Account.ANONYMOUS_ACCOUNT) != null) {
+            return APIResult.Error(APIError.MessageRes(R.string.duplicate_multi_reddit))
+        } else {
+            val newMultiReddit = MultiReddit(
+                multipath,
+                name,
+                name,
+                description,
+                null,
+                null,
+                "private",
+                Account.ANONYMOUS_ACCOUNT,
+                0,
+                System.currentTimeMillis(),
+                true,
+                false,
+                false
+            )
+
+            redditDataRoomDatabase.multiRedditDaoKt().insert(newMultiReddit)
+            val anonymousMultiRedditSubreddits: MutableList<AnonymousMultiredditSubreddit> = mutableListOf()
+            for (s in subreddits) {
+                anonymousMultiRedditSubreddits.add(AnonymousMultiredditSubreddit(multipath, s.name, s.iconUrl))
+            }
+            redditDataRoomDatabase.anonymousMultiredditSubredditDaoKt().insertAll(anonymousMultiRedditSubreddits)
+
+            return APIResult.Success(newMultiReddit)
+        }
     }
 }

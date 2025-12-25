@@ -6,8 +6,13 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.RequestManager;
+import com.bumptech.glide.request.RequestOptions;
+
 import java.util.ArrayList;
 
+import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
+import ml.docilealligator.infinityforreddit.R;
 import ml.docilealligator.infinityforreddit.activities.BaseActivity;
 import ml.docilealligator.infinityforreddit.customtheme.CustomThemeWrapper;
 import ml.docilealligator.infinityforreddit.databinding.ItemSelectedSubredditBinding;
@@ -16,11 +21,15 @@ import ml.docilealligator.infinityforreddit.multireddit.ExpandedSubredditInMulti
 public class SelectedSubredditsRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final BaseActivity activity;
     private final CustomThemeWrapper customThemeWrapper;
+    private final RequestManager glide;
     private final ArrayList<ExpandedSubredditInMultiReddit> subreddits;
 
-    public SelectedSubredditsRecyclerViewAdapter(BaseActivity activity, CustomThemeWrapper customThemeWrapper, ArrayList<ExpandedSubredditInMultiReddit> subreddits) {
+    public SelectedSubredditsRecyclerViewAdapter(BaseActivity activity, CustomThemeWrapper customThemeWrapper,
+                                                 RequestManager glide,
+                                                 ArrayList<ExpandedSubredditInMultiReddit> subreddits) {
         this.activity = activity;
         this.customThemeWrapper = customThemeWrapper;
+        this.glide = glide;
         if (subreddits == null) {
             this.subreddits = new ArrayList<>();
         } else {
@@ -38,6 +47,11 @@ public class SelectedSubredditsRecyclerViewAdapter extends RecyclerView.Adapter<
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof SubredditViewHolder) {
+            glide.load(subreddits.get(holder.getBindingAdapterPosition()).getIconUrl())
+                    .apply(RequestOptions.bitmapTransform(new RoundedCornersTransformation(72, 0)))
+                    .error(glide.load(R.drawable.subreddit_default_icon)
+                            .apply(RequestOptions.bitmapTransform(new RoundedCornersTransformation(72, 0))))
+                    .into(((SubredditViewHolder) holder).binding.iconImageViewItemSelectedSubreddit);
             ((SubredditViewHolder) holder).binding.subredditNameItemSelectedSubreddit.setText(subreddits.get(holder.getBindingAdapterPosition()).getName());
             ((SubredditViewHolder) holder).binding.deleteImageViewItemSelectedSubreddit.setOnClickListener(view -> {
                 subreddits.remove(holder.getBindingAdapterPosition());
@@ -49,6 +63,14 @@ public class SelectedSubredditsRecyclerViewAdapter extends RecyclerView.Adapter<
     @Override
     public int getItemCount() {
         return subreddits.size();
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
+        super.onViewRecycled(holder);
+        if (holder instanceof SubredditViewHolder) {
+            glide.clear(((SubredditViewHolder) holder).binding.iconImageViewItemSelectedSubreddit);
+        }
     }
 
     public void addSubreddits(ArrayList<ExpandedSubredditInMultiReddit> newSubreddits) {

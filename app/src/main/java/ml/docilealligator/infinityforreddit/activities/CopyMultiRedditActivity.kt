@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -55,6 +56,7 @@ import com.bumptech.glide.request.RequestOptions
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import kotlinx.coroutines.launch
 import ml.docilealligator.infinityforreddit.ActionState
+import ml.docilealligator.infinityforreddit.ActionStateError
 import ml.docilealligator.infinityforreddit.DataLoadState
 import ml.docilealligator.infinityforreddit.Infinity
 import ml.docilealligator.infinityforreddit.R
@@ -120,7 +122,7 @@ class CopyMultiRedditActivity : BaseActivity() {
             }
         }
 
-        val multipath = intent.getStringExtra(EXTRA_MULTIPATH) ?: "/user/remainanon/m/asiannsfw"
+        val multipath = intent.getStringExtra(EXTRA_MULTIPATH) ?: ""
 
         copyMultiRedditActivityViewModel = ViewModelProvider.create(
             this,
@@ -131,6 +133,7 @@ class CopyMultiRedditActivity : BaseActivity() {
 
         setContent {
             AppTheme(customThemeWrapper.themeType) {
+                val context = LocalContext.current
                 val scrollBehavior = enterAlwaysScrollBehavior()
                 val multiRedditState by copyMultiRedditActivityViewModel.multiRedditState.collectAsStateWithLifecycle()
                 val copyMultiRedditState by copyMultiRedditActivityViewModel.copyMultiRedditState.collectAsStateWithLifecycle()
@@ -145,8 +148,12 @@ class CopyMultiRedditActivity : BaseActivity() {
                 LaunchedEffect(copyMultiRedditState) {
                     when (copyMultiRedditState) {
                         is ActionState.Error -> {
+                            val error = (copyMultiRedditState as ActionState.Error).error
                             scope.launch {
-                                snackbarHostState.showSnackbar((copyMultiRedditState as ActionState.Error).message)
+                                when (error) {
+                                    is ActionStateError.Message -> snackbarHostState.showSnackbar(error.message)
+                                    is ActionStateError.MessageRes -> snackbarHostState.showSnackbar(context.getString(error.resId))
+                                }
                             }
                         }
                         is ActionState.Idle -> {
